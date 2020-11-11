@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jckj.modules.business.member.mapper.LevelManagementMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="levelManagementResultMap" type="org.jckj.modules.business.member.entity.LevelManagement">
+        <result column="id" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_dept" property="createDept"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="membership_level" property="membershipLevel"/>
+        <result column="voice_conference" property="voiceConference"/>
+        <result column="video_conferencing" property="videoConferencing"/>
+        <result column="subtitle_translation" property="subtitleTranslation"/>
+        <result column="documentary_translation" property="documentaryTranslation"/>
+        <result column="image_recognition_and_translation" property="imageRecognitionAndTranslation"/>
+        <result column="price" property="price"/>
+    </resultMap>
+
+
+    <select id="selectLevelManagementPage" resultMap="levelManagementResultMap">
+        select * from member_level_management where is_deleted = 0
+    </select>
+
+</mapper>

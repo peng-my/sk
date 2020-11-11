@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jckj.modules.business.order.mapper.ManagementMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="managementResultMap" type="org.jckj.modules.business.order.entity.Management">
+        <result column="id" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_dept" property="createDept"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="order_code" property="orderCode"/>
+        <result column="buying_members" property="buyingMembers"/>
+        <result column="pay_amount" property="payAmount"/>
+        <result column="account" property="account"/>
+        <result column="pay_type" property="payType"/>
+        <result column="pay_start_date" property="payStartDate"/>
+        <result column="pay_end_date" property="payEndDate"/>
+        <result column="fk_member_level_management_id" property="fkMemberLevelManagementId"/>
+        <result column="month_of_purchase" property="monthOfPurchase"/>
+    </resultMap>
+    <!-- 通用查询映射结果 -->
+    <resultMap id="managementVOResultMap" type="org.jckj.modules.business.order.vo.ManagementVO">
+        <result column="id" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_dept" property="createDept"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="order_code" property="orderCode"/>
+        <result column="buying_members" property="buyingMembers"/>
+        <result column="pay_amount" property="payAmount"/>
+        <result column="account" property="account"/>
+        <result column="pay_type" property="payType"/>
+        <result column="pay_start_date" property="payStartDate"/>
+        <result column="pay_end_date" property="payEndDate"/>
+        <result column="fk_member_level_management_id" property="fkMemberLevelManagementId"/>
+        <result column="month_of_purchase" property="monthOfPurchase"/>
+        <result column="membership_level" property="membershipLevel"/>
+    </resultMap>
+
+    <select id="selectManagementPage" resultMap="managementResultMap">
+        select * from order_management where is_deleted = 0
+    </select>
+    <!--订单管理分页+条件搜索-->
+    <select id="selectManagementVOPage" resultMap="managementVOResultMap">
+        SELECT
+        o.id,
+        o.order_code,
+        o.buying_members,
+        o.pay_amount,
+        o.account,
+        o.pay_type,
+        o.pay_start_date,
+        o.pay_end_date,
+        o.month_of_purchase,
+        o.fk_member_level_management_id,
+        o.order_status,
+        o.create_user,
+        o.create_dept,
+        o.create_time,
+        o.update_user,
+        o.update_time,
+        o.`status`,
+        o.is_deleted,
+        m.membership_level
+        FROM
+            order_management AS o
+            LEFT JOIN member_level_management AS m ON o.fk_member_level_management_id = m.id
+        WHERE
+        o.is_deleted=0
+        <if test="managementVO.orderCode !=null || managementVO.orderCode!=''">
+          AND o.order_code=#{managementVO.orderCode}
+        </if>
+        <if test="managementVO.orderCode !=null">
+            AND  o.create_time
+        </if>
+        <if test="managementVO.account !=null || managementVO.account !=''">
+            AND  o.account=#{managementVO.account}
+        </if>
+        <if test="managementVO.membershipLevel !=null || managementVO.membershipLevel !=''">
+            AND  m.membership_level=#{managementVO.membershipLevel}
+        </if>
+        <if test="managementVO.orderStatus !=null || managementVO.orderStatus !=-1 || managementVO.orderStatus !=''">
+            AND o.order_status=#{managementVO.orderStatus}
+        </if>
+    </select>
+</mapper>

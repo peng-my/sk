@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jckj.modules.business.user.mapper.UserExtMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="userExtResultMap" type="org.jckj.modules.business.user.entity.UserExt">
+        <result column="id" property="id"/>
+        <result column="tenant_id" property="tenantId"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="account" property="account"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="real_name" property="realName"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="birthday" property="birthday"/>
+        <result column="sex" property="sex"/>
+        <result column="role_id" property="roleId"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="post_id" property="postId"/>
+    </resultMap>
+    <!-- 用户管理展示查询映射结果 -->
+    <resultMap id="userManageExtVOMap" type="org.jckj.modules.business.user.vo.UserManageExtVO">
+        <result column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="name" property="name"/>
+        <result column="account" property="account"/>
+        <result column="gId" property="gId"/>
+        <result column="jpy" property="jpy"/>
+        <result column="cny" property="cny"/>
+        <result column="usd" property="usd"/>
+        <result column="fkMemberLevelManagementId" property="fk_member_level_management_id"/>
+        <result column="membershipLevel" property="membership_level"/>
+        <result column="membershipLevel" property="membership_level"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <!--管理员查询-->
+    <resultMap id="userAdminExtVOMap" type="org.jckj.modules.business.user.vo.UserAdminExtVO">
+        <result column="id" property="id"/>
+        <result column="create_time" property="createTime"/>
+        <result column="name" property="name"/>
+        <result column="account" property="account"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <select id="selectBankCardPage" resultMap="userExtResultMap">
+        select * from jckj_user where is_deleted = 0
+    </select>
+        <!--用户管理中心查询+搜索-->
+    <select id="selectUserManageExtVOPage" resultMap="userManageExtVOMap">
+       SELECT
+        u.create_time,
+        u.id,
+        u.NAME,
+        u.account,
+        g.id AS gId,
+        g.jpy,
+        g.cny,
+        g.usd,
+        l.fk_member_level_management_id,
+        l.membership_level,
+        u.is_deleted
+        FROM
+            jckj_user AS u
+            LEFT JOIN user_registration_gift AS g ON u.id = g.create_user
+            LEFT JOIN (
+            SELECT
+                *
+            FROM
+                (-- 	3查询出这个值的所有信息
+                SELECT
+                    id AS mId,
+                    membership_level
+                FROM
+                    member_level_management AS b
+                WHERE
+                    EXISTS (-- 2查询出所有订单对应的商品 取其中的某个值
+                    SELECT
+                        c.membership_level
+                    FROM
+                        (
+                        SELECT
+                          <choose>
+                          <when test="userManageExtVO.membershipLevel !=-1 || userManageExtVO.membershipLevel !=null || userManageExtVO.membershipLevel !=''">
+                              Max( #{userManageExtVO.membershipLevel} )
+                          </when>
+                          <otherwise>
+                              Max( me.membership_level )
+                          </otherwise>
+                          </choose>
+                            AS membership_level
+                        FROM
+                            member_level_management AS me
+                        WHERE
+                            EXISTS ( -- 	1查询出所有订单
+                                SELECT create_user, fk_member_level_management_id FROM order_management AS ors WHERE me.id = ors.fk_member_level_management_id -- 			指定是那个用户
+                            )
+                        ) AS c
+                    WHERE
+                        b.membership_level = c.membership_level
+                    )
+                ) AS f
+                LEFT JOIN order_management AS ma ON ma.fk_member_level_management_id = f.mId
+            ) AS l ON u.id = l.create_user
+        WHERE
+            u.role_id=#{userManageExtVO.roleId}
+            and
+            u.account != "admin"
+            <if test="userManageExtVO.account !='' || userManageExtVO.account !=null ">
+                AND u.account=#{userManageExtVO.account}
+            </if>
+            AND u.is_deleted = 0
+            AND u.account IS NOT NULL
+    </select>
+    <select id="selectUser" resultMap="userExtResultMap">
+        SELECT * FROM jckj_user WHERE id={#param1} and account!='admin' OR account IS NULL
+    </select>
+    <update id="updataIsBan">
+        <choose>
+            <when test="isDeleted==0">
+                update jckj_user set is_deleted=1 where id={#id}
+            </when>
+            <when test="isDeleted==1">
+                update jckj_user set is_deleted=0 where id=#{{#id}
+            </when>
+        </choose>
+    </update>
+    <select id="selectAdminIpage" resultMap="userAdminExtVOMap">
+        SELECT
+        u.id,
+        u.create_time,
+        u.account,
+        u.`name`,
+        u.`status`,
+        u.is_deleted
+        FROM
+            jckj_user AS u
+            LEFT JOIN
+            jckj_role AS r
+            ON
+                r.id = u.role_id
+        WHERE
+        r.is_deleted=0 AND
+        u.role_id = #{param1}
+        <if test="account !=null || account!=''">
+           AND  u.account= #{account}
+        </if>
+    </select>
+    <select id="selectLoginTime" resultType="java.util.Date">
+    SELECT
+	create_time
+    FROM
+	jckj_log_api
+    WHERE
+	1 = 1
+	AND params LIKE concat('%',#{account},'%')
+    ORDER BY
+	create_time DESC
+	LIMIT 1
+    </select>
+</mapper>

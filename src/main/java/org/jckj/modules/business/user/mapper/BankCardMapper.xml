@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jckj.modules.business.user.mapper.BankCardMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="bankCardResultMap" type="org.jckj.modules.business.user.entity.BankCard">
+        <result column="id" property="id"/>
+        <result column="create_user" property="createUser"/>
+        <result column="create_dept" property="createDept"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_user" property="updateUser"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="status" property="status"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="card_number" property="cardNumber"/>
+        <result column="term_of_validity" property="termOfValidity"/>
+        <result column="cvv" property="cvv"/>
+        <result column="name" property="name"/>
+        <result column="middle_name" property="middleName"/>
+        <result column="sur_name" property="surName"/>
+        <result column="street_address_one" property="streetAddressOne"/>
+        <result column="street_address_tow" property="streetAddressTow"/>
+        <result column="city" property="city"/>
+        <result column="province_state" property="provinceState"/>
+        <result column="post_code" property="postCode"/>
+        <result column="country_region" property="countryRegion"/>
+    </resultMap>
+
+
+    <select id="selectBankCardPage" resultMap="bankCardResultMap">
+        select * from new_bank_card where is_deleted = 0
+    </select>
+
+</mapper>

@@ -1,0 +1,8 @@
+${AnsiColor.BLUE}                       ____. _________    ____  __.      ____.
+${AnsiColor.BLUE}                      |    | \_   ___ \  |    |/ _|     |    |
+${AnsiColor.BLUE}                      |    | /    \  \/  |      <       |    |
+${AnsiColor.BLUE}                  /\__|    | \     \____ |    |  \  /\__|    |
+${AnsiColor.BLUE}                  \________|  \______  / |____|__ \ \________|
+${AnsiColor.BLUE}                                     \/          \/
+
+${AnsiColor.BLUE}:: JCKJ ${jckj.service.version} :: ${spring.application.name}:${AnsiColor.RED}${jckj.env}${AnsiColor.BLUE} :: Running SpringBoot ${spring-boot.version} :: ${AnsiColor.BRIGHT_BLACK}

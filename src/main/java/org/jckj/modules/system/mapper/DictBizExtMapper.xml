@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jckj.modules.system.mapper.DictBizExtMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="dictResultMap" type="org.jckj.modules.system.entity.DictBizExt">
+        <id column="id" property="id"/>
+        <result column="tenant_id" property="tenantId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="code" property="code"/>
+        <result column="dict_key" property="dictKey"/>
+        <result column="dict_value" property="dictValue"/>
+        <result column="sort" property="sort"/>
+        <result column="remark" property="remark"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <resultMap id="treeNodeResultMap" type="org.jckj.common.launch.tool.node.JcKjTreeNode">
+        <id column="id" property="id"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="title" property="title"/>
+        <result column="value" property="value"/>
+        <result column="str_key" property="strKey"/>
+        <result column="key" property="key"/>
+    </resultMap>
+
+    <resultMap id="dictResultMapVO" type="org.jckj.modules.system.vo.DictBizExtVO">
+        <id column="id" property="id"/>
+        <result column="tenant_id" property="tenantId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="code" property="code"/>
+        <result column="dict_key" property="dictKey"/>
+        <result column="dict_value" property="dictValue"/>
+        <result column="sort" property="sort"/>
+        <result column="remark" property="remark"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="has_children" property="hasChildren"/>
+    </resultMap>
+    <!-- oracle 版本 -->
+    <!--<select id="getValue" resultType="java.lang.String">
+        select
+            dict_value
+        from jckj_dict_biz where code = #{param1, jdbcType=VARCHAR} and dict_key = #{param2} and dict_key >= 0  rownum 1
+    </select>-->
+
+    <select id="dictionaryList" resultMap="treeNodeResultMap">
+        with recursive cte as
+                   (
+                       -- 先查询root节点
+                       select
+                           id, parent_id, dict_value as title, id as "value", dict_key as "str_key", 0 as "key"
+                       from  jckj_dict_biz where code = #{param1} and is_deleted = 0 and parent_id=0
+                       union all
+                       -- 通过cte递归查询root节点的直接子节点
+                       select
+                           a.id, a.parent_id, a.dict_value as title, a.id as "value", a.dict_key as "str_key", 0 as "key"
+                       from cte
+                                join jckj_dict_biz as a on a.parent_id = cte.id and a.is_deleted = 0
+                   )
+        select
+            c.id, c.parent_id, c.title, c.value, c.str_key, c.key
+        from cte as c where parent_id != 0 order by str_key;--去除根数据
+    </select>
+    <select id="dictionaryListByKey" resultMap="treeNodeResultMap">
+        with recursive cte as
+                   (
+                       -- 先查询root节点
+                       select
+                           id, parent_id, dict_value as title, id as "value", dict_key as "str_key", 0 as "key"
+                       from  jckj_dict_biz where code = #{param1} and dict_key = #{param2} and is_deleted = 0
+                       union all
+                       -- 通过cte递归查询root节点的直接子节点
+                       select
+                           a.id, a.parent_id, a.dict_value as title, a.id as "value", a.dict_key as "str_key", 0 as "key"
+                       from cte
+                                join jckj_dict_biz as a on a.parent_id = cte.id and a.is_deleted = 0
+                   )
+        select
+            c.id, c.parent_id, c.title, c.value, c.str_key, c.key
+        from cte as c where c.str_key != #{param2}
+        ORDER BY str_key;--去除根数据
+    </select>
+
+    <select id="lazyList" resultMap="dictResultMapVO">
+        SELECT
+        dict.* ,
+        (
+        SELECT
+        CASE WHEN count(1) > 0 THEN 1 ELSE 0 END
+        FROM
+        jckj_dict_biz
+        WHERE
+        parent_id = dict.id and is_deleted = 0
+        ) AS "has_children"
+        FROM
+        jckj_dict_biz dict
+        WHERE dict.is_deleted = 0
+        <if test="param1!=null">
+            and dict.parent_id = #{param1}
+        </if>
+        ORDER BY dict.sort
+    </select>
+
+</mapper>
